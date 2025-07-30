@@ -16,7 +16,25 @@ def timezone():
         d.msgbox(f"{tag} set success")
         menu()
 
+    elif code == d.CANCEL:
+        menu()
+
     print(tag)
+
+def locale():
+    a = [(i.replace("utf8", "UTF-8"), "", False) for i in check_output(['locale', '-a'], text=True).splitlines()]
+
+    code, tag = d.radiolist(text="Select locale (default is en_US.UTF-8)", choices=a)
+
+    if code == d.OK:
+        d.msgbox(tag)
+        menu()
+
+    elif code == d.CANCEL:
+        menu()
+
+def keyboard():
+    pass
 
 def welcome():
      if d.msgbox("Welcome to ITEC-OS installer. Minimum installer for archiso Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK: 
@@ -38,6 +56,9 @@ def menu():
     if code == d.OK:
         if tags == "Timezone":
             timezone()
+
+        elif tags == "Locale":
+            locale()
 
 if __name__ == "__main__":
     welcome()
