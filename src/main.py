@@ -1,4 +1,4 @@
-import os, subprocess, psutil
+import os, subprocess, socket, time
 
 from dialog import Dialog
 from zoneinfo import available_timezones
@@ -22,6 +22,8 @@ USER_PASSWORD = ""
 
 MENU_LABEL = "Use <UP> and <DOWN> key to navigate menus, Use <TAB> to switch between buttons."
 
+check_internet = lambda: not socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect_ex(("8.8.8.8", 53))
+
 def run_command(cmd, exit_on_error=True):
     """Run shell command with error handling"""
     result = subprocess.run(cmd, shell=True)
@@ -33,23 +35,36 @@ def detect_boot_mode():
     return "UEFI" if os.path.exists("/sys/firmware/efi/efivars") else "BIOS"
 
 def network():
-    result = subprocess.run(
-            ['nmcli', '-f', 'SSID,SECURITY', 'device', 'wifi', 'list'],
+    if check_internet():
+        d.infobox("Scanning WiFi...")
+        result = subprocess.run(
+            ['nmcli', '-f', 'SSID', 'd', 'w', 'l'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         ).stdout.strip().split('\n')
-    choose = [(name, "") for name,_ in psutil.net_if_addrs().items()]
 
-    code, tag = d.menu(title="Select Interface", text=MENU_LABEL,choices=choose)
-
-    if tag.startswith("w"):
         net = []
+        
         for n in result[1:]:
-            part = n.strip().split(None, 1)
-            net.append((part[0],part[1]))
+            net.append((n,""))
 
-        s, t = d.menu(title="Select WiFi Network" ,text="",choices=net, width=60)
+        code, tag = d.menu(title="Select WiFi Network", text=MENU_LABEL,choices=net) 
+
+        if code == d.OK:
+            code, password = d.passwordbox(text=f"Enter password for {tag}", width=70, insecure=True)
+
+            if code == d.OK:
+                print(password)
+
+        else:
+            menu()
+
+
+    else:
+        d.infobox("You have connected to internet!")
+        time.sleep(2)
+        menu()
 
 
 def timezone():
@@ -116,7 +131,12 @@ def partition():
 
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
-    if code == d.CANCEL:
+    if code == d.OK:
+        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n100MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n") == d.OK:
+            #run_command(f"cfdisk {disk}")
+            print("success")
+
+    elif code == d.CANCEL:
         menu()
 
 
@@ -126,6 +146,8 @@ def welcome():
         d.msgbox("This script must be run as root!")
         exit(1)
     """
+    d.infobox(text=f"Detect boot mode: {detect_boot_mode()}")
+    time.sleep(1)
     if d.msgbox(title="ITEC Installer",text="Welcome to ITEC-OS. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK:
         
         menu()
@@ -133,7 +155,7 @@ def welcome():
 def menu(): 
     code, tags = d.menu(
             text=MENU_LABEL,
-            choices=[("Network",""),
+            choices=[("Network", "Connected" if check_internet() else "Disconnected"),
                      ("Timezone", TIMEZONE), 
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
