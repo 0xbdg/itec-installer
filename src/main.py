@@ -1,4 +1,4 @@
-import os, subprocess, socket, time
+import os, subprocess, socket, time,re
 
 from dialog import Dialog
 from zoneinfo import available_timezones
@@ -114,15 +114,11 @@ def locale():
 
 def partition():
     get_disk = subprocess.run(
-        ["lsblk", "-dno", "NAME,SIZE", "-e7,11"],
+        ["lsblk", "-dno", "NAME,SIZE"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
         check=True).stdout.strip().split('\n')
-
-    if not get_disk:
-        d.msgbox("no disk found")
-        exit(1)
 
     choose = []
     for disk in get_disk:
@@ -133,23 +129,86 @@ def partition():
 
     if code == d.OK:
         if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n100MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n") == d.OK:
-            #run_command(f"cfdisk {disk}")
-            print("success")
+
+            if detect_boot_mode() == "UEFI":
+                #run_command(f"parted {disk} mklabel gpt")
+                run_command(f"cfdisk {disk}")
+                menu()
+            elif detect_boot_mode() == "BIOS":
+                #run_command(f"parted {disk} mklabel msdos")
+                run_command(f"cfdisk {disk}")
+                menu()
 
     elif code == d.CANCEL:
+        menu()
+
+def filesystem():
+    fs = subprocess.run(["lsblk", '-no', 'NAME,SIZE,FSTYPE,MOUNTPOINT'],stdout=subprocess.PIPE, stdin=subprocess.PIPE, text=True, check=True).stdout.strip().split('\n')
+
+    fs_disk = []
+
+    for f in fs:
+        dev = f.split(None,3)
+        fs_disk.append(
+            (
+                "/dev/"+re.sub(r'^[^a-zA-Z0-9]*','',dev[0]), 
+                f"size:{dev[1]}|fstype:{dev[2] if len(dev) > 2 else "none"}|mnt:{dev[3] if len(dev) > 3 else "none"}"
+            )
+        )
+
+    code, tag = d.menu(title="Setting the filesystem and mountpoint",text=MENU_LABEL, choices=fs_disk)
+
+    if code == d.OK:
+        s, fs_type = d.menu(
+            title=f"Select the filesystem for {tag}", 
+            text=MENU_LABEL,
+            choices=[
+                ("btrfs", "Oracle's Btrfs"),
+                ("ext2", "Linux ext2"),
+                ("ext3", "Linux ext3"),
+                ("ext4", "Linux ext4"),
+                ("f2fs", "Flash-Friendly Filesystem"),
+                ("swap", "Linux swap"),
+                ("vfat", "FAT32"),
+                ("xfs", "SGI's XFS")
+            ]
+        )
+
+        if s == d.OK:
+            if fs_type == "swap":
+                run_command(f"mkswap {tag}")
+                run_command(f"swapon {tag}")
+                d.msgbox(f"swap on {tag} success")
+                filesystem()
+
+            else:
+                inp, val = d.inputbox(f"Please specify the mountpoint on {tag}")
+
+                if inp == d.OK:
+                    os.makedirs("/mnt", exist_ok=True)
+                    if fs_type == "vfat":
+                        run_command(f"mkfs.fat -F32 {tag}")
+                    else:
+                        run_command(f"mkfs.{fs_type} {tag}")
+
+                    os.makedirs(str(val), exist_ok=True)
+                    run_command(f"mount {tag} {val}")
+                    filesystem()
+        else:
+            filesystem()
+    else:
         menu()
 
 
 def welcome():
     """
     if os.geteuid() != 0:
-        d.msgbox("This script must be run as root!")
+        d.msgbox("must be run as root!")
         exit(1)
     """
     d.infobox(text=f"Detect boot mode: {detect_boot_mode()}")
     time.sleep(1)
-    if d.msgbox(title="ITEC Installer",text="Welcome to ITEC-OS. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK:
-        
+    if d.msgbox(title="ITEC Installer",text="Welcome to ITEC-OS. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK: 
         menu()
 
 def menu(): 
@@ -160,6 +219,7 @@ def menu():
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
                      ("Partition", ""),
+                     ("Filesystem", ""),
                      ("User", ""),
                      ("Install", "")
             ],
@@ -181,6 +241,9 @@ def menu():
 
         elif tags == "Partition":
             partition()
+
+        elif tags == "Filesystem":
+            filesystem()
 
     elif code == d.CANCEL:
         if d.yesno("Are yo sure?") == d.OK:
