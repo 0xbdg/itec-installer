@@ -16,7 +16,6 @@ HOSTNAME = ""
 TIMEZONE = ""
 LOCALE = ""
 KEYMAP = ""
-ROOT_PASSWORD = ""
 USERNAME = ""
 USER_PASSWORD = ""
 
@@ -114,7 +113,7 @@ def locale():
 
 def partition():
     get_disk = subprocess.run(
-        ["lsblk", "-dno", "NAME,SIZE"],
+        ["lsblk", "-dno", "NAME,SIZE,TYPE"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -122,20 +121,21 @@ def partition():
 
     choose = []
     for disk in get_disk:
-        dev, size = disk.split()
-        choose.append((f"/dev/{dev}", "size:"+size))
+        dev, size, t = disk.split()
+        if t == "disk":
+            choose.append((f"/dev/{dev}", "size:"+size))
 
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
     if code == d.OK:
-        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n100MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n") == d.OK:
+        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n") == d.OK:
 
             if detect_boot_mode() == "UEFI":
-                #run_command(f"parted {disk} mklabel gpt")
+                run_command(f"parted {disk} mklabel gpt")
                 run_command(f"cfdisk {disk}")
                 menu()
             elif detect_boot_mode() == "BIOS":
-                #run_command(f"parted {disk} mklabel msdos")
+                run_command(f"parted {disk} mklabel msdos")
                 run_command(f"cfdisk {disk}")
                 menu()
 
@@ -143,18 +143,14 @@ def partition():
         menu()
 
 def filesystem():
-    fs = subprocess.run(["lsblk", '-no', 'NAME,SIZE,FSTYPE,MOUNTPOINT'],stdout=subprocess.PIPE, stdin=subprocess.PIPE, text=True, check=True).stdout.strip().split('\n')
+    fs = subprocess.run(["lsblk", '-ln','-o', 'NAME,SIZE,FSTYPE,MOUNTPOINT,TYPE'],stdout=subprocess.PIPE, stdin=subprocess.PIPE, text=True, check=True).stdout.strip().split('\n')
 
     fs_disk = []
 
     for f in fs:
-        dev = f.split(None,3)
-        fs_disk.append(
-            (
-                "/dev/"+re.sub(r'^[^a-zA-Z0-9]*','',dev[0]), 
-                f"size:{dev[1]}|fstype:{dev[2] if len(dev) > 2 else "none"}|mnt:{dev[3] if len(dev) > 3 else "none"}"
-            )
-        )
+        dev = f.split(None,4)
+        if len(dev) == 5 and dev[4] == "part":
+            fs_disk.append(("/dev/"+dev[0], f"size:{dev[1]}|fstype:{dev[2] if not dev[2] == "" or dev[2] == None else "None"}|mnt:{dev[3] if not dev[3] == "" or dev[3] == None else "None"}"))
 
     code, tag = d.menu(title="Setting the filesystem and mountpoint",text=MENU_LABEL, choices=fs_disk)
 
@@ -199,6 +195,37 @@ def filesystem():
     else:
         menu()
 
+def user_acc():
+    global HOSTNAME, USERNAME, USER_PASSWORD
+    h_code , hostname = d.inputbox("Enter your hostname: ", init=HOSTNAME)
+
+    if h_code == d.OK:
+        HOSTNAME = hostname
+
+    name_code, username = d.inputbox("Enter your username: ", init=USERNAME)
+
+    if name_code == d.OK:
+        USERNAME = username
+
+    pass_code, password = d.passwordbox("Enter your password: ", insecure=True)
+
+    if pass_code == d.OK:
+        if len(str(password)) < 4:
+            d.msgbox("")
+            user_acc()
+        USER_PASSWORD = password
+
+    confirm_code, confirm = d.passwordbox("Confirm your password: ",insecure=True)
+
+    if confirm_code == d.OK:
+        if confirm == password:
+            menu()
+        else:
+            d.msgbox("Password not match!")
+            user_acc()
+
+def install_system():
+    pass
 
 def welcome():
     """
@@ -220,7 +247,7 @@ def menu():
                      ("Locale", LOCALE),
                      ("Partition", ""),
                      ("Filesystem", ""),
-                     ("User", ""),
+                     ("User Account", HOSTNAME),
                      ("Install", "")
             ],
             title="ITEC-OS Installation Menu",
@@ -244,6 +271,9 @@ def menu():
 
         elif tags == "Filesystem":
             filesystem()
+
+        elif tags == "User Account":
+            user_acc()
 
     elif code == d.CANCEL:
         if d.yesno("Are yo sure?") == d.OK:
