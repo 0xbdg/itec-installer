@@ -4,7 +4,7 @@ from dialog import Dialog
 from zoneinfo import available_timezones
 from lists import keymaps, locales
 
-d = Dialog(dialog="dialog",autowidgetsize=True)
+d = Dialog(dialog="dialog")
 
 d.set_background_title("ITEC-OS Installer (0xbdg)") 
 
@@ -33,7 +33,7 @@ def detect_boot_mode():
     return "UEFI" if os.path.exists("/sys/firmware/efi/efivars") else "BIOS"
 
 def network():
-    if check_internet():
+    if not check_internet():
         d.infobox("Scanning WiFi...")
         result = subprocess.run(
             ['nmcli', '-f', 'SSID', 'd', 'w', 'l'],
@@ -50,7 +50,7 @@ def network():
         code, tag = d.menu(title="Select WiFi Network", text=MENU_LABEL,choices=net) 
 
         if code == d.OK:
-            code, password = d.passwordbox(text=f"Enter password for {tag}", width=70, insecure=True)
+            code, password = d.passwordbox(text=f"Enter password for {tag}", insecure=True)
 
             if code == d.OK:
                 print(password)
@@ -275,7 +275,7 @@ exit
     d.msgbox("Installation complete, restart your computer")
 
 def welcome():
-    
+     
     if os.geteuid() != 0:
         d.msgbox("must be run as root!")
         exit(1)
