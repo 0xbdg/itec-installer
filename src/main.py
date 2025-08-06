@@ -275,11 +275,11 @@ exit
     d.msgbox("Installation complete, restart your computer")
 
 def welcome():
-    """
+    
     if os.geteuid() != 0:
         d.msgbox("must be run as root!")
         exit(1)
-    """
+    
     d.infobox(text=f"Detect boot mode: {detect_boot_mode()}")
     time.sleep(1)
     if d.msgbox(title="ITEC Installer",text="Welcome to ITEC-OS. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK: 
