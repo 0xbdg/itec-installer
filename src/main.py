@@ -1,4 +1,4 @@
-import os, subprocess, socket, time,re
+import os, subprocess, socket, time
 
 from dialog import Dialog
 from zoneinfo import available_timezones
@@ -9,7 +9,6 @@ d = Dialog(dialog="dialog",autowidgetsize=True)
 d.set_background_title("ITEC-OS Installer (0xbdg)") 
 
 DISK = ""
-BOOT_MODE = ""
 ROOT_SIZE = ""
 SWAP_SIZE = ""
 HOSTNAME = ""
@@ -112,6 +111,7 @@ def locale():
         menu()
 
 def partition():
+    global DISK
     get_disk = subprocess.run(
         ["lsblk", "-dno", "NAME,SIZE,TYPE"],
         stdout=subprocess.PIPE,
@@ -129,6 +129,7 @@ def partition():
 
     if code == d.OK:
         if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n") == d.OK:
+            DISK=disk
 
             if detect_boot_mode() == "UEFI":
                 run_command(f"parted {disk} mklabel gpt")
@@ -202,10 +203,16 @@ def user_acc():
     if h_code == d.OK:
         HOSTNAME = hostname
 
+    else:
+        menu()
+
     name_code, username = d.inputbox("Enter your username: ", init=USERNAME)
 
     if name_code == d.OK:
         USERNAME = username
+
+    else:
+        user_acc()
 
     pass_code, password = d.passwordbox("Enter your password: ", insecure=True)
 
@@ -214,6 +221,8 @@ def user_acc():
             d.msgbox("")
             user_acc()
         USER_PASSWORD = password
+    else:
+        user_acc()
 
     confirm_code, confirm = d.passwordbox("Confirm your password: ",insecure=True)
 
@@ -225,7 +234,45 @@ def user_acc():
             user_acc()
 
 def install_system():
-    pass
+    d.infobox("Configuring the system, please wait...")
+    chroot_commands = f"""#!/bin/bash
+ln -sf /usr/share/zoneinfo/{TIMEZONE} /etc/localtime
+hwclock --systohc
+echo "{HOSTNAME}" > /etc/hostname
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
+echo "LANG={LOCALE}" > /etc/locale.conf
+echo "root:{USER_PASSWORD}" | chpasswd
+useradd -m -G wheel {USERNAME}
+echo "{USERNAME}:{USER_PASSWORD}" | chpasswd
+sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+mkinitcpio -P
+"""
+    if detect_boot_mode() == "UEFI":
+        chroot_commands += f"""
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+"""
+    elif detect_boot_mode() == "BIOS":
+        chroot_commands += f"""
+grub-install --target=i386-pc {DISK}
+"""
+    chroot_commands += """
+grub-mkconfig -o /boot/grub/grub.cfg
+exit
+"""
+    with open("/mnt/chroot_script.sh", "w") as f:
+        f.write(chroot_commands)
+
+    run_command("chmod +x /mnt/chroot_script.sh")
+    run_command("arch-chroot /mnt /chroot_script.sh")
+    os.remove("/mnt/chroot_script.sh")
+
+    d.infobox("Installing packages, please wait...")
+
+    run_command("pacstrap /mnt base linux linux-firmware nano sudo grub git efibootmgr os-prober networkmanager")
+    run_command("genfstab -U /mnt >> /mnt/etc/fstab")
+    run_command("umount -R /mnt", exit_on_error=False)
+    d.msgbox("Installation complete, restart your computer")
 
 def welcome():
     """
@@ -245,7 +292,7 @@ def menu():
                      ("Timezone", TIMEZONE), 
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
-                     ("Partition", ""),
+                     ("Partition", DISK),
                      ("Filesystem", ""),
                      ("User Account", HOSTNAME),
                      ("Install", "")
@@ -274,6 +321,9 @@ def menu():
 
         elif tags == "User Account":
             user_acc()
+
+        elif tags == "Install":
+            install_system()
 
     elif code == d.CANCEL:
         if d.yesno("Are yo sure?") == d.OK:
