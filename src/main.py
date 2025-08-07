@@ -119,14 +119,17 @@ def partition():
 
     choose = []
     for disk in get_disk:
-        dev, size, t = disk.split()
-        if t == "disk":
-            choose.append((f"/dev/{dev}", "size:"+size))
+        dev  = disk.split(None, 3)
+        if len(dev) < 0:
+            d.msgbox("disk not found!")
+            menu()
+        if dev[2] == "disk":
+            choose.append((f"/dev/{dev[0]}", "size:"+dev[1]))
 
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
     if code == d.OK:
-        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n") == d.OK:
+        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", height=75, width=100) == d.OK:
             DISK=disk
 
             if detect_boot_mode() == "UEFI":
@@ -148,7 +151,10 @@ def filesystem():
 
     for f in fs:
         dev = f.split(None,4)
-        if dev[2] == "part":
+        if len(dev) < 0:
+            d.msgbox("disk part not found, please create one")
+            partition()
+        elif dev[2] == "part":
             fs_disk.append(("/dev/"+dev[0], f"size:{dev[1]}|fstype:{"None" if len(dev) < 5 else dev[4]}|mnt:{"None" if len(dev) < 4 else dev[3]}"))
 
     code, tag = d.menu(title="Setting the filesystem and mountpoint",text=MENU_LABEL, choices=fs_disk)
@@ -232,7 +238,11 @@ def user_acc():
             user_acc()
 
 def install_system():
-    d.infobox("Configuring the system, please wait...")
+    d.infobox("Installing package to system, please wait...")
+    run_command("pacstrap /mnt base linux linux-firmware nano sudo grub git efibootmgr os-prober networkmanager")
+    run_command("genfstab -U /mnt >> /mnt/etc/fstab")
+
+    d.infobox("Configuring system, please wait...")
     chroot_commands = f"""#!/bin/bash
 ln -sf /usr/share/zoneinfo/{TIMEZONE} /etc/localtime
 hwclock --systohc
@@ -263,12 +273,8 @@ exit
 
     run_command("chmod +x /mnt/chroot_script.sh")
     run_command("arch-chroot /mnt /chroot_script.sh")
-    os.remove("/mnt/chroot_script.sh")
-
-    d.infobox("Installing packages, please wait...")
-
-    run_command("pacstrap /mnt base linux linux-firmware nano sudo grub git efibootmgr os-prober networkmanager")
-    run_command("genfstab -U /mnt >> /mnt/etc/fstab")
+    os.remove("/mnt/chroot_script.sh") 
+ 
     run_command("umount -R /mnt", exit_on_error=False)
     d.msgbox("Installation complete, restart your computer")
 
