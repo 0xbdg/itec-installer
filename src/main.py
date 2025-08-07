@@ -9,8 +9,6 @@ d = Dialog(dialog="dialog")
 d.set_background_title("ITEC-OS Installer (0xbdg)") 
 
 DISK = ""
-ROOT_SIZE = ""
-SWAP_SIZE = ""
 HOSTNAME = ""
 TIMEZONE = ""
 LOCALE = ""
@@ -144,14 +142,14 @@ def partition():
         menu()
 
 def filesystem():
-    fs = subprocess.run(["lsblk", '-ln','-o', 'NAME,SIZE,FSTYPE,MOUNTPOINT,TYPE'],stdout=subprocess.PIPE, stdin=subprocess.PIPE, text=True, check=True).stdout.strip().split('\n')
+    fs = subprocess.run(["lsblk", '-ln','-o', 'NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE'],stdout=subprocess.PIPE, stdin=subprocess.PIPE, text=True, check=True).stdout.strip().split('\n')
 
     fs_disk = []
 
     for f in fs:
         dev = f.split(None,4)
-        if len(dev) == 5 and dev[4] == "part":
-            fs_disk.append(("/dev/"+dev[0], f"size:{dev[1]}|fstype:{dev[2] if not dev[2] == "" or dev[2] == None else "None"}|mnt:{dev[3] if not dev[3] == "" or dev[3] == None else "None"}"))
+        if dev[2] == "part":
+            fs_disk.append(("/dev/"+dev[0], f"size:{dev[1]}|fstype:{"None" if len(dev) < 5 else dev[4]}|mnt:{"None" if len(dev) < 4 else dev[3]}"))
 
     code, tag = d.menu(title="Setting the filesystem and mountpoint",text=MENU_LABEL, choices=fs_disk)
 
