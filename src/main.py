@@ -119,12 +119,12 @@ def partition():
 
     choose = []
     for disk in get_disk:
-        dev  = disk.split(None, 3)
-        if len(dev) < 0:
-            d.msgbox("disk not found!")
-            menu()
+        dev  = disk.split(None, 3) 
         if dev[2] == "disk":
             choose.append((f"/dev/{dev[0]}", "size:"+dev[1]))
+        else:
+            d.msgbox("disk not found!")
+            menu()
 
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
@@ -150,12 +150,12 @@ def filesystem():
     fs_disk = []
 
     for f in fs:
-        dev = f.split(None,4)
-        if len(dev) < 0:
+        dev = f.split(None,4) 
+        if dev[2] == "part":
+            fs_disk.append(("/dev/"+dev[0], f"size:{dev[1]}|fstype:{"None" if len(dev) < 5 else dev[4]}|mnt:{"None" if len(dev) < 4 else dev[3]}"))
+        else:
             d.msgbox("disk part not found, please create one")
             partition()
-        elif dev[2] == "part":
-            fs_disk.append(("/dev/"+dev[0], f"size:{dev[1]}|fstype:{"None" if len(dev) < 5 else dev[4]}|mnt:{"None" if len(dev) < 4 else dev[3]}"))
 
     code, tag = d.menu(title="Setting the filesystem and mountpoint",text=MENU_LABEL, choices=fs_disk)
 
@@ -218,7 +218,7 @@ def user_acc():
     else:
         user_acc()
 
-    pass_code, password = d.passwordbox("Enter your password: ", insecure=True)
+    pass_code, password = d.passwordbox("Enter your password: ", init=USER_PASSWORD,insecure=True)
 
     if pass_code == d.OK:
         if len(str(password)) < 4:
@@ -250,6 +250,8 @@ echo "{HOSTNAME}" > /etc/hostname
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 echo "LANG={LOCALE}" > /etc/locale.conf
+localectl set-keymap {KEYMAP}
+echo "KEYMAP={KEYMAP}" > /etc/vconsole.conf
 echo "root:{USER_PASSWORD}" | chpasswd
 useradd -m -G wheel {USERNAME}
 echo "{USERNAME}:{USER_PASSWORD}" | chpasswd
@@ -266,6 +268,8 @@ grub-install --target=i386-pc {DISK}
 """
     chroot_commands += """
 grub-mkconfig -o /boot/grub/grub.cfg
+systemctl enable NetworkManager.service
+systemctl start NetworkManager.service
 exit
 """
     with open("/mnt/chroot_script.sh", "w") as f:
