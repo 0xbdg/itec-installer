@@ -232,8 +232,9 @@ def user_acc():
             user_acc()
 
 def install_system():
+    packages = "base linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager gnome gdm gnome-clocks gnome-console gnome-calendar gnome-characters gnome-disk-utility gnome-keyring gnome-shell nautilus gnome-connections gnome-control-center gnome-system-monitor gnome-remote-desktop gnome-session gnome-menus gnome-color-manager gnome-font-viewer"
     d.infobox("Installing package to system, please wait...")
-    run_command("pacstrap /mnt base linux linux-firmware nano sudo grub git efibootmgr os-prober networkmanager")
+    run_command(f"pacstrap /mnt {packages}")
     run_command("genfstab -U /mnt >> /mnt/etc/fstab")
 
     d.infobox("Configuring system, please wait...")
@@ -264,6 +265,7 @@ grub-install --target=i386-pc {DISK}
 grub-mkconfig -o /boot/grub/grub.cfg
 systemctl enable NetworkManager.service
 systemctl start NetworkManager.service
+systemctl enable gdm
 exit
 """
     with open("/mnt/chroot_script.sh", "w") as f:
