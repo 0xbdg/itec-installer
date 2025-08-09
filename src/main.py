@@ -232,7 +232,7 @@ def user_acc():
             user_acc()
 
 def install_system():
-    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager openbox ly xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 thunar firefox kitty xterm plank"
+    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 thunar firefox kitty xterm plank"
     d.infobox("Installing package to system, please wait...")
     run_command(f"pacstrap /mnt {packages}")
     run_command("genfstab -U /mnt >> /mnt/etc/fstab")
@@ -265,7 +265,7 @@ grub-install --target=i386-pc {DISK}
 grub-mkconfig -o /boot/grub/grub.cfg
 systemctl enable NetworkManager.service
 systemctl start NetworkManager.service
-systemctl enable ly.service
+systemctl enable lightdm.service
 exit
 """
     with open("/mnt/chroot_script.sh", "w") as f:
