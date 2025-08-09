@@ -232,7 +232,7 @@ def user_acc():
             user_acc()
 
 def install_system():
-    packages = "base linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager openbox lightdm  lightdm-gtk-greeter xorg xorg-server xorg-xinit kitty xdg-utils tint2 thunar firefox xfce-terminal"
+    packages = "base linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager openbox lightdm  lightdm-gtk-greeter xorg xorg-server xorg-xinit xdg-utils tint2 thunar firefox xfce4-terminal"
     d.infobox("Installing package to system, please wait...")
     run_command(f"pacstrap /mnt {packages}")
     run_command("genfstab -U /mnt >> /mnt/etc/fstab")
