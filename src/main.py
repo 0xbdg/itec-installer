@@ -311,7 +311,7 @@ def menu():
                      ("User Account", HOSTNAME),
                      ("Install", "")
             ],
-            title="ITEC-OS Installation Menu (0xbdg)",
+            title="ITEC-OS Installation Menu",
             width=50, 
     )
     if code == d.OK:
