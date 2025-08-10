@@ -15,6 +15,7 @@ LOCALE = ""
 KEYMAP = ""
 USERNAME = ""
 USER_PASSWORD = ""
+SELECTED_FS = []
 
 MENU_LABEL = "Use <UP> and <DOWN> key to navigate menus, Use <TAB> to switch between buttons."
 
@@ -126,7 +127,7 @@ def partition():
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
     if code == d.OK:
-        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", height=75, width=100) == d.OK:
+        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", width=50) == d.OK:
             DISK=disk
 
             if detect_boot_mode() == "UEFI":
@@ -142,6 +143,7 @@ def partition():
         menu()
 
 def filesystem():
+    global SELECTED_FS
     fs = subprocess.run(["lsblk", '-ln','-o', 'NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE'],stdout=subprocess.PIPE, stdin=subprocess.PIPE, text=True, check=True).stdout.strip().split('\n')
 
     fs_disk = []
@@ -188,6 +190,7 @@ def filesystem():
 
                     os.makedirs(str(val), exist_ok=True)
                     run_command(f"mount {tag} {val}")
+                    SELECTED_FS.append(tag)
                     filesystem()
         else:
             filesystem()
@@ -232,7 +235,7 @@ def user_acc():
             user_acc()
 
 def install_system():
-    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 thunar firefox kitty xterm plank"
+    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager alsa-utils openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 caja firefox kitty feh conky rofi perl perl-gtk3 perl-data-dump"
     d.infobox("Installing package to system, please wait...")
     run_command(f"pacstrap /mnt {packages}")
     run_command("genfstab -U /mnt >> /mnt/etc/fstab")
@@ -297,7 +300,7 @@ def menu():
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
                      ("Partition", DISK),
-                     ("Filesystem", ""),
+                     ("Filesystem", f"{SELECTED_FS}"),
                      ("User Account", HOSTNAME),
                      ("Install", "")
             ],
