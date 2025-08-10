@@ -131,7 +131,7 @@ def partition():
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
     if code == d.OK:
-        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", width=60, height=50) == d.OK:
+        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", width=60, height=30) == d.OK:
             DISK=disk
 
             if detect_boot_mode() == "UEFI":
@@ -308,7 +308,7 @@ def menu():
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
                      ("Partition", DISK),
-                     ("Filesystem", SELECTED_FS),
+                     ("Filesystem", f"{SELECTED_FS}"),
                      ("User Account", HOSTNAME),
                      ("Install", "")
             ],
@@ -341,7 +341,7 @@ def menu():
             install_system()
 
     elif code == d.CANCEL:
-        if d.yesno("Are yo sure?") == d.OK:
+        if d.yesno("Are you sure want to cancel installation?") == d.OK:
             exit(1)
 
         else:
