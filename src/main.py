@@ -46,6 +46,10 @@ def network():
         for n in result[1:]:
             net.append((n,""))
 
+        if len(net) <= 0:
+            if d.msgbox("WiFi not found!")==d.OK:
+                menu()
+
         code, tag = d.menu(title="Select WiFi Network", text=MENU_LABEL,choices=net) 
 
         if code == d.OK:
@@ -127,7 +131,7 @@ def partition():
     code, disk = d.menu(title="Select the disk of partition",text=MENU_LABEL,choices=choose)
 
     if code == d.OK:
-        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", width=50) == d.OK:
+        if d.msgbox(title=f"Modify Partition Table on {disk}",text=f"cfdisk will be executed for disk {disk}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n", width=60, height=50) == d.OK:
             DISK=disk
 
             if detect_boot_mode() == "UEFI":
@@ -151,7 +155,11 @@ def filesystem():
     for f in fs:
         dev = f.split(None,4) 
         if dev[2] == "part":
-            fs_disk.append(("/dev/"+dev[0] if not len(dev) < 1 else "None", f"size:{dev[1] if not len(dev) < 2 else "None"}|fstype:{"None" if len(dev) < 5 else dev[4]}|mnt:{"None" if len(dev) < 4 else dev[3]}")) 
+            fs_disk.append(("/dev/"+dev[0] if not len(dev) < 1 else "None", f"size:{dev[1] if not len(dev) < 2 else "None"}|fstype:{"None" if len(dev) < 5 else dev[4]}|mnt:{"None" if len(dev) < 4 else dev[3]}"))
+
+    if len(fs_disk) <= 0:
+        if d.msgbox("Disk part not found!"):
+            partition()
 
     code, tag = d.menu(title="Setting the filesystem and mountpoint",text=MENU_LABEL, choices=fs_disk)
 
@@ -300,7 +308,7 @@ def menu():
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
                      ("Partition", DISK),
-                     ("Filesystem", f"{SELECTED_FS}"),
+                     ("Filesystem", SELECTED_FS),
                      ("User Account", HOSTNAME),
                      ("Install", "")
             ],
