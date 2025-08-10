@@ -189,8 +189,7 @@ def filesystem():
             else:
                 inp, val = d.inputbox(f"Please specify the mountpoint on {tag}")
 
-                if inp == d.OK:
-                    os.makedirs("/mnt", exist_ok=True)
+                if inp == d.OK: 
                     if fs_type == "vfat":
                         run_command(f"mkfs.fat -F32 {tag}")
                     else:
