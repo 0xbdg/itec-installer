@@ -25,7 +25,7 @@ def run_command(cmd, exit_on_error=True):
     """Run shell command with error handling"""
     result = subprocess.run(cmd, shell=True)
     if exit_on_error and result.returncode != 0:
-        d.msgbox(f"Command failed: {cmd}")
+        d.msgbox(f"Command failed:")
         exit(1)
 
 def detect_boot_mode():
@@ -56,7 +56,14 @@ def network():
             code, password = d.passwordbox(text=f"Enter password for {tag}", insecure=True)
 
             if code == d.OK:
-                print(password)
+                run_command(f'nmcli d w c \"{tag}\" password \"{password}\"')
+
+                if check_internet():
+                    d.msgbox(f"Success connect to {tag}")
+                    menu()
+                else:
+                    d.msgbox(f"Failed connect to {tag}, check if password invalid")
+                    network()
 
         else:
             menu()
@@ -242,6 +249,10 @@ def user_acc():
             user_acc()
 
 def install_system():
+    if not check_internet():
+        d.msgbox("You must connect to internet first before installing the system!!, you will auto redirect to Network option")
+        network()
+
     packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager network-manager-applet alsa-utils openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 caja firefox kitty conky rofi perl perl-gtk3 perl-data-dump geany nitrogen pasystray pulseaudio"
     d.infobox("Installing package to system, please wait...")
     run_command(f"pacstrap /mnt {packages}")
@@ -306,7 +317,7 @@ def menu():
                      ("Keyboard", KEYMAP),
                      ("Locale", LOCALE),
                      ("Partition", DISK),
-                     ("Filesystem", f"{SELECTED_FS}"),
+                     ("Filesystem", str(SELECTED_FS)),
                      ("User Account", HOSTNAME),
                      ("Install", "")
             ],
