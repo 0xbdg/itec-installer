@@ -226,7 +226,7 @@ def user_acc():
 
     if pass_code == d.OK:
         if len(str(password)) < 4:
-            d.msgbox("")
+            d.msgbox("Password is too short, try again!")
             user_acc()
         USER_PASSWORD = password
     else:
@@ -242,7 +242,7 @@ def user_acc():
             user_acc()
 
 def install_system():
-    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager alsa-utils openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 caja firefox kitty feh conky rofi perl perl-gtk3 perl-data-dump"
+    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager network-manager-applet alsa-utils openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 caja firefox kitty conky rofi perl perl-gtk3 perl-data-dump geany nitrogen pasystray pulseaudio"
     d.infobox("Installing package to system, please wait...")
     run_command(f"pacstrap /mnt {packages}")
     run_command("genfstab -U /mnt >> /mnt/etc/fstab")
@@ -274,7 +274,6 @@ grub-install --target=i386-pc {DISK}
     chroot_commands += """
 grub-mkconfig -o /boot/grub/grub.cfg
 systemctl enable NetworkManager.service
-systemctl start NetworkManager.service
 systemctl enable lightdm.service
 exit
 """
