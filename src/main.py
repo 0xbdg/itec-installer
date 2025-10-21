@@ -1,3 +1,4 @@
+from sys import stderr
 import os, subprocess, socket, time
 
 from dialog import Dialog
@@ -30,6 +31,9 @@ def run_command(cmd, exit_on_error=True):
 
 def detect_boot_mode():
     return "UEFI" if os.path.exists("/sys/firmware/efi/efivars") else "BIOS"
+
+def detect_secureboot():
+    return subprocess.run(["mokutil", "--sb-state"], text=True, capture_output=True).stdout.strip().split()[-1]
 
 def network():
     if not check_internet():
@@ -198,7 +202,7 @@ def filesystem():
 
                 if inp == d.OK: 
                     if fs_type == "vfat":
-                        run_command(f"mkfs.fat -F32 {tag}")
+                        run_command(f"mkfs.fat -F 32 {tag}")
                     else:
                         run_command(f"mkfs.{fs_type} {tag}")
 
@@ -252,8 +256,9 @@ def install_system():
     if not check_internet():
         d.msgbox("You must connect to internet first before installing the system!!, you will auto redirect to Network option")
         network()
-
-    packages = "base base-devel linux linux-firmware vim sudo grub git efibootmgr os-prober networkmanager network-manager-applet alsa-utils openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 caja firefox kitty conky rofi perl perl-gtk3 perl-data-dump geany nitrogen pasystray pulseaudio"
+    packages = "base base-devel linux linux-firmware vim sudo grub git os-prober networkmanager network-manager-applet alsa-utils openbox lightdm lightdm-gtk-greeter xorg xorg-xauth xorg-server xorg-xinit xdg-utils tint2 caja firefox kitty conky rofi perl perl-gtk3 perl-data-dump geany nitrogen pasystray pulseaudio"
+    if detect_boot_mode() == "UEFI":
+        packages += " efibootmgr" 
     d.infobox("Installing package to system, please wait...")
     run_command(f"pacstrap /mnt {packages}")
     run_command("genfstab -U /mnt >> /mnt/etc/fstab")
@@ -300,11 +305,11 @@ exit
 
 def welcome():
      
-    if os.geteuid() != 0:
+    if os.geteuid() == 0:
         d.msgbox("must be run as root!")
         exit(1)
     
-    d.infobox(text=f"Detect boot mode: {detect_boot_mode()}")
+    d.infobox(text=f"Detect boot mode: {detect_boot_mode()}\nSecureBoot: {detect_secureboot()}")
     time.sleep(1)
     if d.msgbox(title="ITEC Installer",text="Welcome to ITEC-OS. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK: 
         menu()
