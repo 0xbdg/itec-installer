@@ -3,7 +3,6 @@ import os, subprocess, socket, time
 
 from dialog import Dialog
 from zoneinfo import available_timezones
-from lists import keymaps, locales
 
 d = Dialog(dialog="dialog")
 
@@ -99,6 +98,7 @@ def timezone():
 
 def keyboard():
     global KEYMAP
+    keymaps = subprocess.run(["localectl", "list-keymaps"], stdout=subprocess.PIPE, text=True).stdout.strip().split('\n')
     keymap = [(k, "", False) for k in keymaps]
 
     code, tag = d.radiolist(title="Select keymaps", text=MENU_LABEL,choices=keymap)
@@ -113,6 +113,7 @@ def keyboard():
 
 def locale():
     global LOCALE
+    locales = subprocess.run(["grep \"^#[a-z]\" /etc/locale.gen | sed 's/^#//'"], shell=True,stdout=subprocess.PIPE, text=True).stdout.strip().split('\n')
     loc = [(l, "", False) for l in locales]
 
     code, tag = d.radiolist(title="Select locale", text=MENU_LABEL,choices=loc)
@@ -304,11 +305,11 @@ exit
     d.msgbox("Installation complete, restart your computer")
 
 def welcome():
-     
+    """ 
     if os.geteuid() == 0:
         d.msgbox("must be run as root!")
         exit(1)
-    
+    """
     d.infobox(text=f"Detect boot mode: {detect_boot_mode()}\nSecureBoot: {detect_secureboot()}")
     time.sleep(1)
     if d.msgbox(title="ITEC Installer",text="Welcome to ITEC-OS. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", width=50, height=10) == d.OK: 
