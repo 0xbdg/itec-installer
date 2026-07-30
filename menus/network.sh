@@ -15,7 +15,6 @@ function network_menu {
     case $? in 
         0)
             echo "ok"
-            break
             ;;
         1)
             echo "cancel"
