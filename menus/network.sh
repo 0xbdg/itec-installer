@@ -23,7 +23,7 @@ function network_menu {
 
     case $? in 
         0)
-            connect $network_dlg
+            connect "\"$network_dlg\""
             ;;
         1)
             menu

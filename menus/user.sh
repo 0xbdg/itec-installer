@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function user_menu {
-    hostname=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --inputbox "Enter hostname" 10 80)
+    hostname=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --inputbox "Enter your hostname" 10 $WIDTH)
 
     if [ $? -eq 1 ]; then
         menu
@@ -9,7 +9,7 @@ function user_menu {
 
     echo $hostname
 
-    username=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --inputbox "Enter username" 10 80)
+    username=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --inputbox "Enter your username" 10 $WIDTH)
 
     if [ $? -eq 1 ]; then
         user_menu
@@ -17,7 +17,7 @@ function user_menu {
 
     echo $username
 
-    password=$(dialog --stdout cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --passwordbox "Enter your password" 10 80)
+    password=$(dialog --stdout cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --passwordbox "Enter your password" 10 $WIDTH)
 
     echo $password
 
@@ -25,7 +25,7 @@ function user_menu {
         user_menu
     fi
 
-    confirm=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --passwordbox "Confirm password" 10 80)
+    confirm=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --passwordbox "Confirm password" 10 $WIDTH)
 
     echo $confirm
 
