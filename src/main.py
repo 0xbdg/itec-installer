@@ -22,7 +22,6 @@ MENU_LABEL = "Use <UP> and <DOWN> key to navigate menus, Use <TAB> to switch bet
 check_internet = lambda: not socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect_ex(("8.8.8.8", 53))
 
 def run_command(cmd, exit_on_error=True):
-    """Run shell command with error handling"""
     result = subprocess.run(cmd, shell=True)
     if exit_on_error and result.returncode != 0:
         d.msgbox(f"Command failed:")

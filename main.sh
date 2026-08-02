@@ -34,7 +34,16 @@ function menu {
             user_menu
             ;;
         "Network")
-            network_menu
+            if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
+                dialog --backtitle "$BACK_TITLE" --title "Network Configuration" --msgbox "You have connected to internet, press ok" 10 80
+
+                if [ $? -eq 0 ]; then
+                    menu
+                fi
+            else
+                network_menu
+            fi
+
             ;;
         "Partition")
             partition_menu
@@ -43,16 +52,14 @@ function menu {
             filesystem_menu
             ;;
         "Quit" )
+            echo $LOCALE
+            echo $TIMEZONE
+            echo $KEYBOARD
+
             exit
             ;;
     esac
 }
 
-
-#if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
-        welcome_menu
-        menu
-#else
-#       dialog --backtitle "$BACK_TITLE" --title "Connection failed" --msgbox "if you want to run ITEC-OS Installer, you must connect to internet first!!" 10 60
-#fi
-
+welcome_menu
+menu

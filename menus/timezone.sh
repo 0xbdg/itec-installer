@@ -6,7 +6,11 @@ timezone_menu(){
     tzmenu=()
 
     for timezone in "${timezones[@]}"; do
-        tzmenu+=("$timezone" "" "off")
+        if [ "$timezone" = "$TIMEZONE" ]; then
+            tzmenu+=("$timezone" "" "on")
+        else 
+            tzmenu+=("$timezone" "" "off")
+        fi
     done
 
     timezone_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Select Time Zone" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${tzmenu[@]}")
@@ -15,5 +19,6 @@ timezone_menu(){
         menu
     fi
 
-    echo $timezone_dlg
+    TIMEZONE=$timezone_dlg
+    menu
 }
