@@ -4,6 +4,10 @@ function summary(){
     dialog --backtitle "$BACK_TITLE" --title "" --yesno "" $HEIGHT $WIDTH
 }
 
+function install {
+    dialog --back-title "$BACK_TITLE" --title "Installing & Configure System" --programbox "Installing Package..." 20 80 < <(sudo pacman -S --noconfirm linux linux-firmware 2>&1)
+
+}
 log=""
 sudo pacman -S --noconfirm neofetch 2>&1 | while read -r line; do
     log="${log}${line}\n"

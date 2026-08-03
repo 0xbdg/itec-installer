@@ -58,6 +58,7 @@ function menu {
             echo $HOST
             echo $USERNAME
             echo $PASSWORD
+            echo $SELECTED_PART
 
             exit
             ;;
