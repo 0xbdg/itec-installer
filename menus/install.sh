@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function summary(){
+    dialog --backtitle "$BACK_TITLE" --title "" --yesno "" $HEIGHT $WIDTH
+}
+
 log=""
 sudo pacman -S --noconfirm neofetch 2>&1 | while read -r line; do
     log="${log}${line}\n"

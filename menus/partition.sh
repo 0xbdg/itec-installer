@@ -22,5 +22,6 @@ function partition_menu {
         echo "cfdisk $partition_dlg"
     fi
 
+    SELECTED_PART=$partition_dlg
     menu
 }

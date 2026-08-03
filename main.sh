@@ -55,6 +55,9 @@ function menu {
             echo $LOCALE
             echo $TIMEZONE
             echo $KEYBOARD
+            echo $HOST
+            echo $USERNAME
+            echo $PASSWORD
 
             exit
             ;;
