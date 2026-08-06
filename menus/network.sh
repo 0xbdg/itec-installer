@@ -3,7 +3,7 @@
 connect() {
     wifi_pass=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Connect to the WiFi" --passwordbox "Enter $1 password" 10 80)
 
-    if [ $? -eq 1 ]; then
+    if [[ $? -eq 1 ]]; then
         network_menu
     fi
     echo $wifi_pass

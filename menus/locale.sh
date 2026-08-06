@@ -5,7 +5,7 @@ locale_menu(){
 
     locales_menu=()
     for locale in "${locales[@]}"; do
-        if [ "$locale" = "$LOCALE" ]; then
+        if [[ "$locale" = "$LOCALE" ]]; then
             locales_menu+=("$locale" "" "on")
         else
             locales_menu+=("$locale" "" "off")
@@ -14,7 +14,7 @@ locale_menu(){
 
     locale_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Select Locale" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${locales_menu[@]}")
 
-    if [ $? -eq 1 ]; then
+    if [[ $? -eq 1 ]]; then
         menu
     fi
 

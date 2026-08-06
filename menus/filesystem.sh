@@ -9,7 +9,7 @@ set_MNT(){
 set_FS(){
     choose=$(dialog --stdout --cancel-label "Back" --backtitle "$BACK_TITLE" --title "Select the filesystem for $1" --menu "$LABEL" $HEIGHT $WIDTH 5 "btrfs" "Oracle's Btrfs" "ext2" "Linux ext2" "ext3" "Linux ext3" "ext4" "Linux ext4" "f2fs" "Flash-Friendly Filesystem" "swap" "Linux swap" "vfat" "FAT32" "xfs" "SGI'S XFS")
 
-    if [ $? -eq 1 ]; then
+    if [[ $? -eq 1 ]]; then
         filesystem_menu
     fi
 
@@ -60,7 +60,7 @@ function filesystem_menu {
  
     filesystem_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Setting the filesystem & mountpoint" --menu "$LABEL" $HEIGHT $WIDTH 5 "${partitions[@]}")
 
-    if [ $? -eq 1 ]; then
+    if [[ $? -eq 1 ]]; then
         menu
     fi
 

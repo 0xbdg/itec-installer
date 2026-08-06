@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "colors.sh"
+source "core/colors.sh"
 
 HEIGHT=18
 WIDTH=75

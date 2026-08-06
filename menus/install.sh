@@ -1,10 +1,15 @@
 #!/bin/bash
 
-function summary(){
-    dialog --backtitle "$BACK_TITLE" --title "" --yesno "" $HEIGHT $WIDTH
+function install(){
+    dialog --yes-label "Install" --no-label "Back" --backtitle "$BACK_TITLE" --title "Ready to install" --yesno "The installer is now ready to install the application on your computer.\n\nClick Install to begin the installation. If you want to review or change your installation settings, click Back." 10 $WIDTH
+
+    if [ $? -eq 1 ]; then
+        menu
+    fi
 }
 
-function install {
+L="""
+function ready {
     dialog --back-title "$BACK_TITLE" --title "Installing & Configure System" --programbox "Installing Package..." 20 80 < <(sudo pacman -S --noconfirm linux linux-firmware 2>&1)
 
 }
@@ -29,7 +34,6 @@ sudo pacman -S --noconfirm htop btop fastfetch linux 2>&1 | {
     done
 
     dialog --progressbox "$(printf '%s\n' "${lines[@]}")" 20 80
-}
-
-sudo pacman -S --noconfirm neofetch 2>&1 | dialog --programbox "Installing Package..." 20 80
-dialog --programbox "Installing Package..." 20 80 < <(sudo pacman -S --noconfirm neofetch 2>&1)
+    sudo pacman -S --noconfirm neofetch 2>&1 | dialog --programbox "Installing Package..." 20 80
+    dialog --programbox "Installing Package..." 20 80 < <(sudo pacman -S --noconfirm neofetch 2>&1)
+}"""
