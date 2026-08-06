@@ -11,9 +11,12 @@ source "menus/filesystem.sh"
 source "menus/install.sh"
 
 function welcome_menu {
-    dialog --yes-label "Next" --no-label "Cancel" --backtitle "$BACK_TITLE" --title "Welcome to ITEC-OS Installer" --yesno "\nWelcome to the itec-os Installer.\n\nThis installer will guide you through the steps required to install itec-os on your computer. During the installation, you will choose the installation drive, configure your system settings, and create your user account.\n\nBefore continuing, ensure you have backed up any important data if you plan to modify existing partitions.\n\nClick Next to continue or Cancel to exit the installer." $HEIGHT $WIDTH
+    MODE=$([ -d "/sys/firmware/efi/efivars" ] && echo "UEFI" || echo "BIOS")
+    dialog --yes-label "Next" --no-label "Cancel" --backtitle "$BACK_TITLE" --title "Welcome to ITEC-OS Installer" --yesno "\nWelcome to the ITEC-OS Installer.\n\nThis installer will guide you through the steps required to install ITEC-OS on your computer. During the installation, you will choose the installation drive, configure your system settings, and create your user account.\n\nBefore continuing, ensure you have backed up any important data if you plan to modify existing partitions.\n\nClick Next to continue or Cancel to exit the installer." $HEIGHT $WIDTH
 
-    if [[ $? -eq 1 ]]; then
+    if [[ $? -eq 0 ]]; then
+        menu
+    elif [[ $? -eq 1 ]]; then
         exit
     fi
 
@@ -23,6 +26,14 @@ function exit_menu {
     dialog --yes-label "Exit" --no-label "Back" --backtitle "$BACK_TITLE" --title "Exit Installer" --yesno "\nThe installation has been canceled.\n\nNo further changes will be made to your system. If any installation steps were completed before cancellation, you may need to restart the installer to begin again.\n\nClick Exit to close the installer." $HEIGHT $WIDTH
 
     if [[ $? -eq 0 ]]; then
+        echo $LOCALE
+        echo $TIMEZONE
+        echo $KEYBOARD
+        echo $HOST
+        echo $USERNAME
+        echo $PASSWORD
+        echo $SELECTED_PART
+        echo $MODE
         exit
     elif [[ $? -eq 1 ]]; then
         menu
@@ -30,7 +41,7 @@ function exit_menu {
 }
 
 function menu {
-    menu_dlg=$(dialog --stdout --colors --no-cancel --backtitle "$BACK_TITLE" --title "ITEC-OS Installation Menu" --menu "$LABEL" $HEIGHT $WIDTH 5 "Network" "Set up the network" "Keyboard" "Set system keyboard" "Timezone" "Set system time zone" "Locale" "Set system locale" "User" "Set hostname, username and password" "Partition" "Partition disk(s)" "Filesystems" "Configure filesystem and mount point" "Install" "Start installation" "Quit" "Exit installer")
+    menu_dlg=$(dialog --stdout --colors --no-cancel --backtitle "$BACK_TITLE" --title "ITEC-OS Installer Menu" --menu "$LABEL" $HEIGHT $WIDTH 5 "Network" "Set up the network" "Keyboard" "Set system keyboard" "Timezone" "Set system time zone" "Locale" "Set system locale" "User" "Set hostname, username and password" "Partition" "Partition disk(s)" "Filesystems" "Configure filesystem and mount point" "Install" "Start installation" "Quit" "Exit installer")
     exit=$?
 
     case $exit in  
@@ -83,7 +94,6 @@ function menu {
             echo $PASSWORD
             echo $SELECTED_PART
 
-            exit
             ;;
     esac
 }

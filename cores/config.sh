@@ -2,7 +2,7 @@
 
 source "core/colors.sh"
 
-HEIGHT=18
+HEIGHT=20
 WIDTH=75
 BACK_TITLE="ITEC-OS Installer - https://github.com/0xbdg"
 TITLE="ITEC-OS Installation Menu"
@@ -15,5 +15,4 @@ HOST=""
 USERNAME=""
 PASSWORD=""
 SELECTED_PART=""
-
-
+MODE=""
