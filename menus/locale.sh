@@ -12,7 +12,7 @@ locale_menu(){
         fi
     done
 
-    locale_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Select Locale" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${locales_menu[@]}")
+    locale_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Select Locale" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${locales_menu[@]}")
 
     if [[ $? -eq 1 ]]; then
         menu

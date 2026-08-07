@@ -13,7 +13,7 @@ timezone_menu(){
         fi
     done
 
-    timezone_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Select Time Zone" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${tzmenu[@]}")
+    timezone_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Select Time Zone" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${tzmenu[@]}")
 
     if [[ $? -eq 1 ]]; then
         menu

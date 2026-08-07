@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set_HOSTNAME(){
-    hostname=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --inputbox "Enter your hostname" 10 $WIDTH)
+    hostname=$(dialog --stdout --colors --cancel-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Create User Account" --inputbox "Enter your hostname" 10 $WIDTH)
 
     if [[ $? -eq 1 ]]; then
         menu
@@ -11,7 +11,7 @@ set_HOSTNAME(){
 }
 
 set_USERNAME(){
-    username=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --inputbox "Enter your username" 10 $WIDTH)
+    username=$(dialog --stdout --colors --cancel-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Create User Account" --inputbox "Enter your username" 10 $WIDTH)
 
     if [[ $? -eq 1 ]]; then
         set_HOSTNAME
@@ -21,13 +21,13 @@ set_USERNAME(){
 }
 
 set_PASSWORD(){
-    password=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --passwordbox "Enter your password" 10 $WIDTH)
+    password=$(dialog --stdout --colors --cancel-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Create User Account" --passwordbox "Enter your password" 10 $WIDTH)
 
     if [[ $? -eq 1 ]]; then
         set_USERNAME
     fi
 
-    confirm=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Create User Account" --passwordbox "Confirm password" 10 $WIDTH)
+    confirm=$(dialog --stdout --colors --cancel-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Create User Account" --passwordbox "Confirm password" 10 $WIDTH)
 
     if [[ $? -eq 1 ]]; then
         set_PASSWORD
@@ -35,7 +35,7 @@ set_PASSWORD(){
         if [[ "$confirm" = "$password" ]]; then
             PASSWORD=$confirm
         else
-            dialog --backtitle "$BACK_TITLE" --title "Create User Account" --msgbox "Password not matching, try again!!" 10 $WIDTH
+            dialog --colors --no-lines --backtitle "$BACK_TITLE" --msgbox "Password not matching, try again!!" 5 $WIDTH
 
             if [[ $? -eq 0 ]]; then
                 set_PASSWORD

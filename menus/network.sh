@@ -1,7 +1,7 @@
 #!/bin/bash
 
 connect() {
-    wifi_pass=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Connect to the WiFi" --passwordbox "Enter $1 password" 10 80)
+    wifi_pass=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BOLD}${BLACK}Connect to the WiFi" --passwordbox "Enter $1 password" 10 80)
 
     if [[ $? -eq 1 ]]; then
         network_menu
@@ -10,7 +10,7 @@ connect() {
 }
 
 function network_menu {
-    dialog --backtitle "$BACK_TITLE" --title "Scanning the network" --infobox "Scanning all wifi, please wait..." 10 60
+    dialog --no-lines --colors --backtitle "$BACK_TITLE" --infobox "Scanning all wifi, please wait..." 5 $WIDTH
     net=()
     while IFS=: read -r ssid security signal; do
         net+=("$ssid" "sig:$signal;sec:$security")
@@ -19,7 +19,7 @@ function network_menu {
         awk -F: '$1 != ""'
     ) 
 
-    network_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Select & connect to network" --extra-button --extra-label "Rescan" --menu "$LABEL" $HEIGHT $WIDTH 5 "${net[@]}")
+    network_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BOLD}${BLACK}Select & connect to network" --extra-button --extra-label "Rescan" --menu "$LABEL" $HEIGHT $WIDTH 5 "${net[@]}")
 
     case $? in 
         0)

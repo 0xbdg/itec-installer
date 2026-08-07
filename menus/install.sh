@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function install(){
-    dialog --yes-label "Install" --no-label "Back" --backtitle "$BACK_TITLE" --title "Ready to install" --yesno "The installer is now ready to install the application on your computer.\n\nClick Install to begin the installation. If you want to review or change your installation settings, click Back." 10 $WIDTH
+    dialog --colors --yes-label "Install" --no-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Ready to install" --yesno "\nThe installer is now ready to install the application on your computer.\n\nClick ${BOLD}Install${NORMAL} to begin the installation. If you want to review or change your installation settings, click ${BOLD}Back." 10 $WIDTH
 
     if [ $? -eq 1 ]; then
         menu

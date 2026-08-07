@@ -1,7 +1,7 @@
 #!/bin/bash
 
 partition_MBR(){
-    dialog --backtitle "$BACK_TITLE" --title "Modify Partition Table on $1" --msgbox "\ncfdisk will be executed for disk $1.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned." $HEIGHT $WIDTH
+    dialog --colors --backtitle "$BACK_TITLE" --title "${BLACK}Modify Partition Table on $1" --msgbox "\n${BOLD}cfdisk${NORMAL} will be executed for disk ${BOLD}$1${NORMAL}.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned." $HEIGHT $WIDTH
 
     if [[ $? -eq 0 ]]; then
         echo "cfdisk $1"
@@ -9,7 +9,7 @@ partition_MBR(){
 }
 
 partition_GPT(){
-    dialog --stdout --backtitle "$BACK_TITLE" --title "Modify Partition Table on $1" --msgbox "\ncfdisk will be executed for disk $1.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n" $HEIGHT $WIDTH
+    dialog --colors --backtitle "$BACK_TITLE" --title "${BLACK}Modify Partition Table on $1" --msgbox "\n${BOLD}cfdisk${NORMAL} will be executed for disk ${BOLD}$1${NORMAL}.\n\nTo use GPT on PC BIOS systems an empty partition of 1MB must be added\nat the first 2GB of the disk with the TOGGLE 'bios_grub' enabled.\nNOTE: you don't need this on EFI systems.\n\nFor EFI systems GPT is mandatory and a FAT32 partition with at least\n512MB must be created with the TOGGLE 'boot', this will be used as\nEFI System Partition. This partition must have mountpoint as '/boot/efi'.\n\nAt least 2 partitions are required: swap and rootfs (/).\nFor swap, RAM*2 must be really enough. For / 600MB are required.\n\nWARNING: /usr is not supported as a separate partition.\nWARNING: changes made by parted are destructive, you've been warned.\n" $HEIGHT $WIDTH
 
     if [[ $? -eq 0 ]]; then
         echo "cfdisk $1"
@@ -25,7 +25,7 @@ function partition_menu {
         part+=("/dev/$device" "size:$(lsblk /dev/$device -d -n -o SIZE);type:$(lsblk /dev/$device -d -n -o TYPE)")
     done
 
-    partition_dlg=$(dialog --stdout --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "Select the disk of partition" --menu "$LABEL" $HEIGHT $WIDTH 8 "${part[@]}")
+    partition_dlg=$(dialog --stdout --colors --cancel-label "BACK" --backtitle "$BACK_TITLE" --title "${BLACK}Select the disk of partition" --menu "$LABEL" $HEIGHT $WIDTH 8 "${part[@]}")
 
     if [[ $? -eq 1 ]]; then
         menu

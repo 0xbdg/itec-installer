@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source "cores/config.sh"
+source "cores/colors.sh"
 source "menus/keyboard.sh"
 source "menus/timezone.sh"
 source "menus/locale.sh"
@@ -12,7 +13,7 @@ source "menus/install.sh"
 
 function welcome_menu {
     MODE=$([ -d "/sys/firmware/efi/efivars" ] && echo "UEFI" || echo "BIOS")
-    dialog --yes-label "Next" --no-label "Cancel" --backtitle "$BACK_TITLE" --title "Welcome to ITEC-OS Installer" --yesno "\nWelcome to the ITEC-OS Installer.\n\nThis installer will guide you through the steps required to install ITEC-OS on your computer. During the installation, you will choose the installation drive, configure your system settings, and create your user account.\n\nBefore continuing, ensure you have backed up any important data if you plan to modify existing partitions.\n\nClick Next to continue or Cancel to exit the installer." $HEIGHT $WIDTH
+    dialog --colors --yes-label "Next" --no-label "Cancel" --backtitle "$BACK_TITLE" --title "${BLACK}Welcome to ITEC-OS Installer" --yesno "\nWelcome to the ITEC-OS Installer.\n\nThis installer will guide you through the steps required to install ITEC-OS on your computer. During the installation, you will choose the installation drive, configure your system settings, and create your user account.\n\nBefore continuing, ensure you have backed up any important data if you plan to modify existing partitions.\n\nClick ${BOLD}Next${NORMAL} to continue or ${BOLD}Cancel${NORMAL} to exit the installer." $HEIGHT $WIDTH
 
     if [[ $? -eq 0 ]]; then
         menu
@@ -23,7 +24,7 @@ function welcome_menu {
 }
 
 function exit_menu {
-    dialog --yes-label "Exit" --no-label "Back" --backtitle "$BACK_TITLE" --title "Exit Installer" --yesno "\nThe installation has been canceled.\n\nNo further changes will be made to your system. If any installation steps were completed before cancellation, you may need to restart the installer to begin again.\n\nClick Exit to close the installer." $HEIGHT $WIDTH
+    dialog --colors --yes-label "Exit" --no-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Exit Installer" --yesno "\nThe installation has been canceled.\n\nNo further changes will be made to your system. If any installation steps were completed before cancellation, you may need to restart the installer to begin again.\n\nClick ${BOLD}Exit ${NORMAL}to close the installer." 15 $WIDTH
 
     if [[ $? -eq 0 ]]; then
         echo $LOCALE
@@ -41,7 +42,7 @@ function exit_menu {
 }
 
 function menu {
-    menu_dlg=$(dialog --stdout --colors --no-cancel --backtitle "$BACK_TITLE" --title "ITEC-OS Installer Menu" --menu "$LABEL" $HEIGHT $WIDTH 5 "Network" "Set up the network" "Keyboard" "Set system keyboard" "Timezone" "Set system time zone" "Locale" "Set system locale" "User" "Set hostname, username and password" "Partition" "Partition disk(s)" "Filesystems" "Configure filesystem and mount point" "Install" "Start installation" "Quit" "Exit installer")
+    menu_dlg=$(dialog --stdout --colors --no-cancel --backtitle "$BACK_TITLE" --title "${BLACK}ITEC-OS Installer Menu" --menu "$LABEL" $HEIGHT $WIDTH 5 "Network" "Set up the network" "Keyboard" "Set system keyboard" "Timezone" "Set system time zone" "Locale" "Set system locale" "User" "Set hostname, username and password" "Partition" "Partition disk(s)" "Filesystems" "Configure filesystem and mount point" "Install" "Start installation" "Quit" "Exit installer")
     exit=$?
 
     case $exit in  
@@ -65,7 +66,7 @@ function menu {
             ;;
         "Network")
             if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
-                dialog --backtitle "$BACK_TITLE" --title "Network Configuration" --msgbox "You have connected to internet, press ok to continue." 10 80
+                dialog --no-lines --colors --backtitle "$BACK_TITLE" --msgbox "You have connected to internet, press ok to continue." 5 80
 
                 if [ $? -eq 0 ]; then
                     menu

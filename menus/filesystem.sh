@@ -1,13 +1,17 @@
 #!/bin/bash
 
 set_MNT(){
-    mnt_input=$(dialog --stdout --backtitle "$BACK_TITLE" --inputbox "Please specify the mountpoint on $1" 10 $WIDTH)
+    mnt_input=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --inputbox "Please specify the mountpoint on $1" 10 $WIDTH)
+
+    if [[ $? -eq 1 ]]; then
+        set_FS
+    fi
 
     echo $mnt_input
 }
 
 set_FS(){
-    choose=$(dialog --stdout --cancel-label "Back" --backtitle "$BACK_TITLE" --title "Select the filesystem for $1" --menu "$LABEL" $HEIGHT $WIDTH 5 "btrfs" "Oracle's Btrfs" "ext2" "Linux ext2" "ext3" "Linux ext3" "ext4" "Linux ext4" "f2fs" "Flash-Friendly Filesystem" "swap" "Linux swap" "vfat" "FAT32" "xfs" "SGI'S XFS")
+    choose=$(dialog --stdout --colors --cancel-label "Back" --backtitle "$BACK_TITLE" --title "${BLACK}Select the filesystem for $1" --menu "$LABEL" $HEIGHT $WIDTH 5 "btrfs" "Oracle's Btrfs" "ext2" "Linux ext2" "ext3" "Linux ext3" "ext4" "Linux ext4" "f2fs" "Flash-Friendly Filesystem" "swap" "Linux swap" "vfat" "FAT32" "xfs" "SGI'S XFS")
 
     if [[ $? -eq 1 ]]; then
         filesystem_menu
@@ -58,7 +62,7 @@ function filesystem_menu {
         partitions+=("$NAME" "fstype:${FSTYPE};mnt:${MOUNTPOINT};size:${SIZE}")
     done < <(lsblk -pP -o NAME,FSTYPE,SIZE,TYPE,MOUNTPOINT | grep 'TYPE="part"')
  
-    filesystem_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Setting the filesystem & mountpoint" --menu "$LABEL" $HEIGHT $WIDTH 5 "${partitions[@]}")
+    filesystem_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Setting the filesystem & mountpoint" --menu "$LABEL" $HEIGHT $WIDTH 5 "${partitions[@]}")
 
     if [[ $? -eq 1 ]]; then
         menu

@@ -10,7 +10,7 @@ function keyboard_menu {
             keymenu+=("$keymap" "" "off")
         fi
     done
-    keyboard_dlg=$(dialog --stdout --backtitle "$BACK_TITLE" --title "Select keyboard" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${keymenu[@]}") 
+    keyboard_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Select keyboard" --radiolist "$LABEL" $HEIGHT $WIDTH 10 "${keymenu[@]}") 
     is_exit=$?
 
     if [[ $is_exit -eq 1 ]]; then
