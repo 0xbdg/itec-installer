@@ -1,18 +1,18 @@
 #!/bin/bash
 
 function dewm_menu {
-    $dewm_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Choose DE & WM" --radiolist "$LABEL" $HEIGHT $WIDTH 5 "XFCE" "" "off" "KDE" "" "off" "i3wm" "" "off" "Sway" "" "off")
+    $dewm_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Choose DE & WM" --radiolist "$LABEL" $HEIGHT $WIDTH 5 "Xfce4" "Desktop Environment" "off" "KDE Plasma" "Desktop Environment" "off" "i3-wm" "Window manager" "off" "Sway" "Window Manager" "off")
 
     if [[ $? -eq 1 ]]; then
         profile_menu
     fi
 
     case $dewm_dlg in 
-        "XFCE")
+        "Xfce4")
             ;;
-        "KDE")
+        "KDE Plasma")
             ;;
-        "i3wm")
+        "i3-wm")
             ;;
         "Sway")
             ;;
