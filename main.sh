@@ -9,6 +9,7 @@ source "menus/user.sh"
 source "menus/partition.sh"
 source "menus/network.sh"
 source "menus/filesystem.sh"
+source "menus/profile.sh"
 source "menus/install.sh"
 
 function welcome_menu {
@@ -42,12 +43,12 @@ function exit_menu {
 }
 
 function menu {
-    menu_dlg=$(dialog --stdout --colors --no-cancel --backtitle "$BACK_TITLE" --title "${BLACK}ITEC-OS Installer Menu" --menu "$LABEL" $HEIGHT $WIDTH 5 "Network" "Set up the network" "Keyboard" "Set system keyboard" "Timezone" "Set system time zone" "Locale" "Set system locale" "User" "Set hostname, username and password" "Partition" "Partition disk(s)" "Filesystems" "Configure filesystem and mount point" "Install" "Start installation" "Quit" "Exit installer")
+    menu_dlg=$(dialog --stdout --colors --no-cancel --backtitle "$BACK_TITLE" --title "${BLACK}ITEC-OS Installer Menu" --menu "$LABEL" $HEIGHT $WIDTH 10 "Network" "Set up the network" "Keyboard" "Set system keyboard" "Timezone" "Set system time zone" "Locale" "Set system locale" "User" "Set hostname, username and password" "Partition" "Partition disk(s)" "Filesystems" "Configure filesystem and mount point" "Profile" "Set DEWM, Drivers & Display Manager" "Install" "Start installation" "Quit" "Exit installer")
     exit=$?
 
     case $exit in  
         255)
-            exit
+            menu
             ;;
     esac
 
@@ -66,7 +67,7 @@ function menu {
             ;;
         "Network")
             if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
-                dialog --no-lines --colors --backtitle "$BACK_TITLE" --msgbox "You have connected to internet, press ok to continue." 5 80
+                dialog --no-lines --colors --backtitle "$BACK_TITLE" --msgbox "You have connected to internet, press ${BOLD}OK${NORMAL} to continue." 5 80
 
                 if [ $? -eq 0 ]; then
                     menu
@@ -82,22 +83,18 @@ function menu {
         "Filesystems")
             filesystem_menu
             ;;
+        "Profile")
+            profile_menu
+            ;;
         "Install")
             install
             ;;
         "Quit" )
             exit_menu
-            echo $LOCALE
-            echo $TIMEZONE
-            echo $KEYBOARD
-            echo $HOST
-            echo $USERNAME
-            echo $PASSWORD
-            echo $SELECTED_PART
-
             ;;
     esac
 }
 
+trap '' SIGINT SIGTSTP SIGQUIT
 welcome_menu
 menu
