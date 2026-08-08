@@ -23,7 +23,7 @@ function dewm_menu {
 }
 
 function driver_menu {
-    driver_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Choose Graphic Driver" --radiolist "$LABEL" $HEIGHT $WIDTH 5 "" "" "")
+    driver_dlg=$(dialog --stdout --colors --backtitle "$BACK_TITLE" --title "${BLACK}Choose Graphic Driver" --radiolist "$LABEL" $HEIGHT $WIDTH 5 "All Open Source" "Default" "on" "AMD / ATI" "Open Source" "off" "Intel" "Open Source" "off" "Nvidia" "noveau driver etc" "off" "VMWare / Virtualbox" "Open Source" "off")
 
     if [[ $? -eq 1 ]]; then
         profile_menu
@@ -53,7 +53,7 @@ function profile_menu {
             driver_menu
             ;;
         "Display")
-            exit
+            display_menu
             ;;
     esac
 }
